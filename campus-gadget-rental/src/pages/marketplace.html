@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Browse Gadgets — CampusRent</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../styles/custom.css" />
+</head>
+
+<body class="bg-slate-950 text-white antialiased">
+
+    <div id="navbar"></div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+
+        <!-- Header -->
+        <div class="mb-8">
+            <p class="text-blue-400 text-xs font-semibold uppercase tracking-widest mb-2">Marketplace</p>
+            <h1 class="text-3xl font-bold text-white mb-1">Browse Gadgets</h1>
+            <p class="text-slate-400 text-sm">Find the perfect tech for your next project or event.</p>
+        </div>
+
+        <!-- Search & Filters -->
+        <div class="glass rounded-2xl p-4 mb-6">
+            <div class="flex flex-col md:flex-row gap-3">
+                <div class="flex-1 relative">
+                    <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" fill="none"
+                        stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    <input type="text" id="search-input" placeholder="Search gadgets..." class="input-dark pl-10" />
+                </div>
+                <select id="category-filter" class="input-dark md:w-44 cursor-pointer">
+                    <option value="">All Categories</option>
+                </select>
+                <select id="price-filter" class="input-dark md:w-40 cursor-pointer">
+                    <option value="">Any Price</option>
+                    <option value="300">Under ₹300/day</option>
+                    <option value="600">Under ₹600/day</option>
+                    <option value="1000">Under ₹1,000/day</option>
+                </select>
+                <select id="rating-filter" class="input-dark md:w-40 cursor-pointer">
+                    <option value="">Any Rating</option>
+                    <option value="4">4★ & above</option>
+                    <option value="4.5">4.5★ & above</option>
+                </select>
+                <button id="clear-filters"
+                    class="text-sm text-slate-400 hover:text-blue-400 transition px-2 whitespace-nowrap">Clear
+                    all</button>
+            </div>
+        </div>
+
+        <!-- Category Pills -->
+        <div id="category-pills" class="flex gap-2 flex-wrap mb-6"></div>
+
+        <!-- Results count + sort + map toggle -->
+        <div class="flex items-center justify-between mb-5">
+            <p id="results-count" class="text-sm text-slate-400"></p>
+            <div class="flex items-center gap-3">
+                <div class="flex items-center gap-2 text-xs text-slate-500">
+                    <span>Sort:</span>
+                    <select id="sort-filter"
+                        class="bg-transparent text-slate-300 text-xs border-none outline-none cursor-pointer">
+                        <option value="default">Default</option>
+                        <option value="price-asc">Price: Low to High</option>
+                        <option value="price-desc">Price: High to Low</option>
+                        <option value="rating">Top Rated</option>
+                    </select>
+                </div>
+                <a href="map.html"
+                    class="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg glass border border-white/10 hover:border-blue-500/40 text-slate-300 hover:text-white transition">
+                    <svg class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                    </svg>
+                    Map View
+                </a>
+            </div>
+        </div>
+
+        <!-- Grid -->
+        <div id="gadgets-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5"></div>
+
+        <!-- Empty state -->
+        <div id="empty-state" class="hidden text-center py-24">
+            <div class="text-5xl mb-4">🔍</div>
+            <h3 class="text-lg font-semibold text-white mb-2">No gadgets found</h3>
+            <p class="text-slate-400 text-sm">Try adjusting your filters or search term.</p>
+        </div>
+    </div>
+
+    <div id="footer"></div>
+
+    <script type="module">
+        import { renderNavbar } from '../components/navbar.js';
+        import { renderFooter } from '../components/footer.js';
+        import { createGadgetCard } from '../components/gadget-card.js';
+        import { sampleGadgets, categories } from '../data/sample-gadgets.js';
+
+        renderNavbar('marketplace');
+        renderFooter();
+
+        // ── Populate category filter & pills ──────────────────────────
+        const catFilter = document.getElementById('category-filter');
+        const pillsContainer = document.getElementById('category-pills');
+        let activeCategory = '';
+
+        categories.forEach(cat => {
+            if (cat !== 'All') catFilter.innerHTML += `<option value="${cat}">${cat}</option>`;
+
+            const pill = document.createElement('button');
+            pill.textContent = cat;
+            pill.dataset.cat = cat === 'All' ? '' : cat;
+            pill.className = `px-4 py-1.5 rounded-full text-xs font-medium border transition ${cat === 'All' ? 'bg-blue-600 text-white border-blue-600' : 'bg-transparent text-slate-400 border-white/10 hover:border-blue-500/40 hover:text-slate-200'}`;
+            pill.addEventListener('click', () => {
+                activeCategory = pill.dataset.cat;
+                catFilter.value = activeCategory;
+                document.querySelectorAll('#category-pills button').forEach(b => {
+                    const isActive = b.dataset.cat === activeCategory;
+                    b.className = `px-4 py-1.5 rounded-full text-xs font-medium border transition ${isActive ? 'bg-blue-600 text-white border-blue-600' : 'bg-transparent text-slate-400 border-white/10 hover:border-blue-500/40 hover:text-slate-200'}`;
+                });
+                renderGadgets();
+            });
+            pillsContainer.appendChild(pill);
+        });
+
+        // ── Render ────────────────────────────────────────────────────
+        function renderGadgets() {
+            const search = document.getElementById('search-input').value.toLowerCase();
+            const category = document.getElementById('category-filter').value;
+            const maxPrice = parseFloat(document.getElementById('price-filter').value) || Infinity;
+            const minRating = parseFloat(document.getElementById('rating-filter').value) || 0;
+            const sort = document.getElementById('sort-filter').value;
+
+            let filtered = sampleGadgets.filter(g =>
+                (!search || g.name.toLowerCase().includes(search) || g.category.toLowerCase().includes(search)) &&
+                (!category || g.category === category) &&
+                g.price_per_day <= maxPrice &&
+                g.rating >= minRating
+            );
+
+            if (sort === 'price-asc') filtered.sort((a, b) => a.price_per_day - b.price_per_day);
+            else if (sort === 'price-desc') filtered.sort((a, b) => b.price_per_day - a.price_per_day);
+            else if (sort === 'rating') filtered.sort((a, b) => b.rating - a.rating);
+
+            const grid = document.getElementById('gadgets-grid');
+            const empty = document.getElementById('empty-state');
+            document.getElementById('results-count').textContent = `${filtered.length} gadget${filtered.length !== 1 ? 's' : ''} found`;
+
+            grid.innerHTML = '';
+            if (filtered.length === 0) {
+                empty.classList.remove('hidden');
+                grid.classList.add('hidden');
+            } else {
+                empty.classList.add('hidden');
+                grid.classList.remove('hidden');
+                filtered.forEach(g => { grid.innerHTML += createGadgetCard(g); });
+            }
+        }
+
+        ['search-input', 'category-filter', 'price-filter', 'rating-filter', 'sort-filter'].forEach(id => {
+            document.getElementById(id).addEventListener('input', renderGadgets);
+            document.getElementById(id).addEventListener('change', renderGadgets);
+        });
+
+        document.getElementById('clear-filters').addEventListener('click', () => {
+            ['search-input', 'category-filter', 'price-filter', 'rating-filter', 'sort-filter'].forEach(id => {
+                document.getElementById(id).value = '';
+            });
+            activeCategory = '';
+            document.querySelectorAll('#category-pills button').forEach(b => {
+                b.className = `px-4 py-1.5 rounded-full text-xs font-medium border transition ${b.dataset.cat === '' ? 'bg-blue-600 text-white border-blue-600' : 'bg-transparent text-slate-400 border-white/10 hover:border-blue-500/40 hover:text-slate-200'}`;
+            });
+            renderGadgets();
+        });
+
+        renderGadgets();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>List a Gadget — CampusRent</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../styles/custom.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        .leaflet-tile {
+            filter: brightness(0.75) saturate(0.6) hue-rotate(190deg);
+        }
+
+        .leaflet-container {
+            background: #0f172a;
+        }
+
+        .leaflet-popup-content-wrapper {
+            background: #1e293b !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+            border-radius: 12px !important;
+        }
+
+        .leaflet-popup-content {
+            color: #e2e8f0;
+            font-size: 12px;
+            margin: 8px 12px !important;
+        }
+
+        .leaflet-popup-tip {
+            background: #1e293b !important;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-950 text-white antialiased">
+    <div id="navbar"></div>
+
+    <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <div class="mb-8">
+            <p class="text-blue-400 text-xs font-semibold uppercase tracking-widest mb-2">Earn Money</p>
+            <h1 class="text-2xl font-bold text-white mb-1">List Your Gadget</h1>
+            <p class="text-slate-400 text-sm">Fill in the details and start earning from your unused tech.</p>
+        </div>
+
+        <form id="list-form" class="glass rounded-2xl p-6 space-y-7">
+
+            <!-- Basic Info -->
+            <div>
+                <h2 class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-4">Basic Info</h2>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-400 mb-1.5 uppercase tracking-wide">Gadget
+                            Name <span class="text-red-400">*</span></label>
+                        <input type="text" id="gadget-name" required placeholder="e.g. MacBook Pro 14-inch M2"
+                            class="input-dark" />
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-400 mb-1.5 uppercase tracking-wide">Category
+                            <span class="text-red-400">*</span></label>
+                        <select id="gadget-category" required class="input-dark cursor-pointer">
+                            <option value="">Select a category</option>
+                            <option>Laptops</option>
+                            <option>Cameras</option>
+                            <option>Tablets</option>
+                            <option>Drones</option>
+                            <option>Audio</option>
+                            <option>Electronics</option>
+                            <option>VR/AR</option>
+                            <option>Other</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label
+                            class="block text-xs font-medium text-slate-400 mb-1.5 uppercase tracking-wide">Description
+                            <span class="text-red-400">*</span></label>
+                        <textarea id="gadget-desc" required rows="3"
+                            placeholder="Describe specs, included accessories, and any important notes..."
+                            class="input-dark resize-none"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pricing -->
+            <div>
+                <h2 class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-4">Pricing</h2>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-400 mb-1.5 uppercase tracking-wide">Price per
+                            Day (₹) <span class="text-red-400">*</span></label>
+                        <div class="relative">
+                            <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 text-sm">₹</span>
+                            <input type="number" id="gadget-price" required min="1" placeholder="15"
+                                class="input-dark pl-7" />
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-400 mb-1.5 uppercase tracking-wide">Security
+                            Deposit (₹) <span class="text-red-400">*</span></label>
+                        <div class="relative">
+                            <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 text-sm">₹</span>
+                            <input type="number" id="gadget-deposit" required min="0" placeholder="100"
+                                class="input-dark pl-7" />
+                        </div>
+                    </div>
+                </div>
+                <p class="text-xs text-slate-600 mt-2">Deposit is held and returned when the gadget is safely returned.
+                </p>
+            </div>
+
+            <!-- Condition -->
+            <div>
+                <h2 class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-4">Condition</h2>
+                <div class="grid grid-cols-3 gap-3">
+                    <label class="cursor-pointer">
+                        <input type="radio" name="condition" value="Excellent" class="sr-only" required />
+                        <div
+                            class="condition-label border border-white/10 rounded-xl p-4 text-center hover:border-blue-500/40 transition">
+                            <div class="text-2xl mb-2">✨</div>
+                            <p class="text-xs font-semibold text-white">Excellent</p>
+                            <p class="text-xs text-slate-500 mt-0.5">Like new</p>
+                        </div>
+                    </label>
+                    <label class="cursor-pointer">
+                        <input type="radio" name="condition" value="Good" class="sr-only" />
+                        <div
+                            class="condition-label border border-white/10 rounded-xl p-4 text-center hover:border-blue-500/40 transition">
+                            <div class="text-2xl mb-2">👍</div>
+                            <p class="text-xs font-semibold text-white">Good</p>
+                            <p class="text-xs text-slate-500 mt-0.5">Minor wear</p>
+                        </div>
+                    </label>
+                    <label class="cursor-pointer">
+                        <input type="radio" name="condition" value="Fair" class="sr-only" />
+                        <div
+                            class="condition-label border border-white/10 rounded-xl p-4 text-center hover:border-blue-500/40 transition">
+                            <div class="text-2xl mb-2">🔧</div>
+                            <p class="text-xs font-semibold text-white">Fair</p>
+                            <p class="text-xs text-slate-500 mt-0.5">Visible wear</p>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Location Picker -->
+            <div>
+                <h2 class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-4">Pickup Location</h2>
+                <div class="space-y-3">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-400 mb-1.5 uppercase tracking-wide">Location
+                            Name <span class="text-red-400">*</span></label>
+                        <input type="text" id="gadget-location" required
+                            placeholder="e.g. North Campus Library, Dorm B Room 5" class="input-dark" />
+                    </div>
+                    <div class="flex gap-2">
+                        <button type="button" id="detect-location-btn"
+                            class="flex items-center gap-2 text-xs font-medium px-3 py-2 rounded-lg glass border border-white/10 hover:border-blue-500/40 text-slate-300 hover:text-white transition">
+                            <svg class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            Use My Location
+                        </button>
+                        <span id="location-status" class="text-xs text-slate-500 self-center"></span>
+                    </div>
+                    <!-- Mini map for pin placement -->
+                    <div id="location-map-wrap" class="rounded-xl overflow-hidden border border-white/10 relative"
+                        style="height:220px">
+                        <div id="location-map" style="height:100%;width:100%"></div>
+                        <div
+                            class="absolute bottom-2 left-2 glass text-xs px-2 py-1 rounded-lg text-slate-400 pointer-events-none">
+                            Click map to set pickup pin
+                        </div>
+                    </div>
+                    <input type="hidden" id="gadget-lat" value="16.5" />
+                    <input type="hidden" id="gadget-lng" value="80.6" />
+                </div>
+            </div>
+
+            <!-- Images -->
+            <div>
+                <h2 class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-4">Images</h2>
+                <div id="image-drop-zone"
+                    class="border-2 border-dashed border-white/10 rounded-xl p-8 text-center cursor-pointer hover:border-blue-500/40 transition">
+                    <div class="text-3xl mb-2">📸</div>
+                    <p class="text-sm text-slate-400 mb-1">Drag & drop images or <span
+                            class="text-blue-400">browse</span></p>
+                    <p class="text-xs text-slate-600">PNG, JPG up to 5MB each · Max 5 images</p>
+                    <input type="file" id="image-input" accept="image/*" multiple class="hidden" />
+                </div>
+                <div id="image-previews" class="flex gap-2 flex-wrap mt-3"></div>
+            </div>
+
+            <div id="form-error"
+                class="hidden text-red-400 text-xs bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2"></div>
+            <div id="form-success"
+                class="hidden text-emerald-400 text-xs bg-emerald-500/10 border border-emerald-500/20 rounded-lg px-3 py-2">
+            </div>
+
+            <button type="submit" id="submit-btn" class="btn-primary w-full text-center">List Gadget →</button>
+        </form>
+    </div>
+
+    <div id="footer"></div>
+
+    <script type="module">
+        import { renderNavbar } from '../components/navbar.js';
+        import { renderFooter } from '../components/footer.js';
+
+        renderNavbar('list');
+        renderFooter();
+
+        if (!localStorage.getItem('cgr_user')) window.location.href = 'auth.html';
+
+        // ── Location picker map ───────────────────────────────────────
+        let pickerLat = 16.5, pickerLng = 80.6;
+        const locMap = L.map('location-map', { zoomControl: true, attributionControl: false }).setView([pickerLat, pickerLng], 10);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(locMap);
+
+        const pinIcon = L.divIcon({
+            className: '',
+            html: `<div style="width:28px;height:28px;background:linear-gradient(135deg,#2563eb,#1d4ed8);border:2px solid rgba(255,255,255,0.4);border-radius:50% 50% 50% 0;transform:rotate(-45deg);box-shadow:0 4px 12px rgba(37,99,235,0.5);display:flex;align-items:center;justify-content:center">
+                   <span style="transform:rotate(45deg);font-size:12px">📍</span>
+                 </div>`,
+            iconSize: [28, 28], iconAnchor: [14, 28], popupAnchor: [0, -30],
+        });
+
+        let pinMarker = L.marker([pickerLat, pickerLng], { icon: pinIcon, draggable: true }).addTo(locMap);
+        pinMarker.bindPopup('Drag me to your pickup spot').openPopup();
+
+        function updateCoords(lat, lng) {
+            pickerLat = lat; pickerLng = lng;
+            document.getElementById('gadget-lat').value = lat.toFixed(6);
+            document.getElementById('gadget-lng').value = lng.toFixed(6);
+        }
+
+        // Click map to move pin
+        locMap.on('click', (e) => {
+            pinMarker.setLatLng(e.latlng);
+            updateCoords(e.latlng.lat, e.latlng.lng);
+        });
+
+        // Drag pin
+        pinMarker.on('dragend', (e) => {
+            const { lat, lng } = e.target.getLatLng();
+            updateCoords(lat, lng);
+        });
+
+        // Detect my location
+        document.getElementById('detect-location-btn').addEventListener('click', () => {
+            const status = document.getElementById('location-status');
+            status.textContent = 'Detecting...';
+            if (!navigator.geolocation) { status.textContent = 'Not supported'; return; }
+            navigator.geolocation.getCurrentPosition(
+                ({ coords }) => {
+                    const { latitude: lat, longitude: lng } = coords;
+                    pinMarker.setLatLng([lat, lng]);
+                    locMap.flyTo([lat, lng], 16);
+                    updateCoords(lat, lng);
+                    status.textContent = '✓ Location set';
+                    setTimeout(() => status.textContent = '', 2000);
+                },
+                () => { status.textContent = 'Permission denied'; }
+            );
+        });
+
+        // Condition radio styling
+        document.querySelectorAll('input[name="condition"]').forEach(radio => {
+            radio.addEventListener('change', () => {
+                document.querySelectorAll('.condition-label').forEach(l => {
+                    l.classList.remove('border-blue-500', 'bg-blue-500/10');
+                    l.classList.add('border-white/10');
+                });
+                radio.nextElementSibling.classList.add('border-blue-500', 'bg-blue-500/10');
+                radio.nextElementSibling.classList.remove('border-white/10');
+            });
+        });
+
+        // Image upload
+        const dropZone = document.getElementById('image-drop-zone');
+        const imageInput = document.getElementById('image-input');
+        const previews = document.getElementById('image-previews');
+        let uploadedImages = [];
+
+        dropZone.addEventListener('click', () => imageInput.click());
+        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('border-blue-500/60'); });
+        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('border-blue-500/60'));
+        dropZone.addEventListener('drop', (e) => { e.preventDefault(); dropZone.classList.remove('border-blue-500/60'); handleFiles(e.dataTransfer.files); });
+        imageInput.addEventListener('change', () => handleFiles(imageInput.files));
+
+        function handleFiles(files) {
+            Array.from(files).slice(0, 5 - uploadedImages.length).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    uploadedImages.push(e.target.result);
+                    previews.innerHTML += `<div class="w-16 h-16 rounded-xl overflow-hidden border border-white/10"><img src="${e.target.result}" class="w-full h-full object-cover"/></div>`;
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // Submit
+        document.getElementById('list-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('submit-btn');
+            btn.textContent = 'Listing...';
+            btn.disabled = true;
+
+            const user = JSON.parse(localStorage.getItem('cgr_user'));
+            const gadget = {
+                id: Date.now().toString(),
+                name: document.getElementById('gadget-name').value,
+                category: document.getElementById('gadget-category').value,
+                description: document.getElementById('gadget-desc').value,
+                price_per_day: parseFloat(document.getElementById('gadget-price').value),
+                deposit: parseFloat(document.getElementById('gadget-deposit').value),
+                condition: document.querySelector('input[name="condition"]:checked')?.value || 'Good',
+                images: uploadedImages.length ? uploadedImages : ['https://images.unsplash.com/photo-1518770660439-4636190af475?w=600'],
+                available: true, rating: 0, reviews: 0, owner: user?.name || 'You',
+                location: document.getElementById('gadget-location').value,
+                lat: parseFloat(document.getElementById('gadget-lat').value),
+                lng: parseFloat(document.getElementById('gadget-lng').value),
+            };
+
+            // Firebase: replace with → await insertGadget(gadget) from firebase.js
+            const myGadgets = JSON.parse(localStorage.getItem('cgr_my_gadgets') || '[]');
+            myGadgets.push(gadget);
+            localStorage.setItem('cgr_my_gadgets', JSON.stringify(myGadgets));
+
+            setTimeout(() => {
+                document.getElementById('form-success').textContent = 'Gadget listed successfully! Redirecting...';
+                document.getElementById('form-success').classList.remove('hidden');
+                setTimeout(() => window.location.href = 'dashboard.html', 1200);
+            }, 700);
+        });
+    </script>
+</body>
+
+</html>

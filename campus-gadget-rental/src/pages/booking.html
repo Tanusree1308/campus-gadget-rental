@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Book Gadget — CampusRent</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../styles/custom.css" />
+</head>
+
+<body class="bg-slate-950 text-white antialiased">
+    <div id="navbar"></div>
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <a href="javascript:history.back()"
+            class="inline-flex items-center gap-1.5 text-sm text-slate-400 hover:text-blue-400 transition mb-8">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+            Back
+        </a>
+        <h1 class="text-2xl font-bold text-white mb-8">Complete Your Booking</h1>
+        <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
+
+            <!-- Form -->
+            <div class="lg:col-span-3">
+                <div class="glass rounded-2xl p-6">
+                    <h2 class="font-semibold text-white mb-5">Rental Details</h2>
+                    <form id="booking-form" class="space-y-5">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label
+                                    class="block text-xs font-medium text-slate-400 mb-1.5 uppercase tracking-wide">Start
+                                    Date</label>
+                                <input type="date" id="start-date" required class="input-dark"
+                                    style="color-scheme:dark" />
+                            </div>
+                            <div>
+                                <label
+                                    class="block text-xs font-medium text-slate-400 mb-1.5 uppercase tracking-wide">End
+                                    Date</label>
+                                <input type="date" id="end-date" required class="input-dark"
+                                    style="color-scheme:dark" />
+                            </div>
+                        </div>
+                        <div>
+                            <label
+                                class="block text-xs font-medium text-slate-400 mb-1.5 uppercase tracking-wide">Pickup
+                                Location</label>
+                            <input type="text" id="pickup-location" placeholder="e.g. College gate, Hostel block A"
+                                class="input-dark" />
+                        </div>
+                        <div>
+                            <label
+                                class="block text-xs font-medium text-slate-400 mb-1.5 uppercase tracking-wide">Message
+                                to Owner (optional)</label>
+                            <textarea id="message" rows="3"
+                                placeholder="Introduce yourself and explain your use case..."
+                                class="input-dark resize-none"></textarea>
+                        </div>
+                        <div id="date-error"
+                            class="hidden text-red-400 text-xs bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">
+                        </div>
+                        <button type="submit" id="book-btn" class="btn-primary w-full text-center">Confirm Booking
+                            →</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Price Summary -->
+            <div class="lg:col-span-2">
+                <div class="glass rounded-2xl p-6 sticky top-24">
+                    <div id="gadget-summary" class="mb-5 pb-5 border-b border-white/5"></div>
+                    <div class="space-y-3 text-sm">
+                        <div class="flex justify-between text-slate-400">
+                            <span>Rental (<span id="days-count">0</span> days × <span
+                                    id="price-per-day">₹0</span>)</span>
+                            <span class="text-white" id="rental-cost">₹0</span>
+                        </div>
+                        <div class="flex justify-between text-slate-400">
+                            <span>Refundable deposit</span>
+                            <span class="text-white" id="deposit-amount">₹0</span>
+                        </div>
+                        <div class="flex justify-between text-slate-400">
+                            <span>Service fee (5%)</span>
+                            <span class="text-white" id="service-fee">₹0</span>
+                        </div>
+                        <div class="border-t border-white/5 pt-3 flex justify-between font-bold">
+                            <span class="text-white">Total Due</span>
+                            <span class="text-blue-400 text-lg" id="total-cost">₹0</span>
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-600 mt-4">Deposit refunded when gadget is returned in original
+                        condition.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="success-modal"
+        class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div class="glass rounded-2xl p-8 max-w-sm w-full text-center glow-blue">
+            <div
+                class="w-16 h-16 bg-emerald-500/10 border border-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="w-8 h-8 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+            </div>
+            <h3 class="text-xl font-bold text-white mb-2">Booking Confirmed!</h3>
+            <p class="text-slate-400 text-sm mb-6">Your request has been sent. The owner will confirm shortly.</p>
+            <a href="dashboard.html" class="btn-primary block w-full text-center">View My Bookings</a>
+        </div>
+    </div>
+
+    <div id="footer"></div>
+
+    <script type="module">
+        import { renderNavbar } from '../components/navbar.js';
+        import { renderFooter } from '../components/footer.js';
+        import { sampleGadgets, inr } from '../data/sample-gadgets.js';
+
+        renderNavbar();
+        renderFooter();
+
+        const params = new URLSearchParams(window.location.search);
+        const gadget = sampleGadgets.find(g => g.id === params.get('id')) || sampleGadgets[0];
+
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('start-date').min = today;
+        document.getElementById('end-date').min = today;
+
+        document.getElementById('gadget-summary').innerHTML = `
+      <div class="flex gap-3 items-center">
+        <img src="${gadget.images[0]}" class="w-16 h-16 rounded-xl object-cover border border-white/5"/>
+        <div>
+          <p class="font-semibold text-white text-sm">${gadget.name}</p>
+          <p class="text-xs text-slate-500 mt-0.5">${gadget.category} · ${gadget.condition}</p>
+          <p class="text-blue-400 font-bold text-sm mt-1">${inr(gadget.price_per_day)}/day</p>
+        </div>
+      </div>`;
+
+        document.getElementById('price-per-day').textContent = inr(gadget.price_per_day);
+        document.getElementById('deposit-amount').textContent = inr(gadget.deposit);
+
+        function updatePricing() {
+            const start = new Date(document.getElementById('start-date').value);
+            const end = new Date(document.getElementById('end-date').value);
+            const err = document.getElementById('date-error');
+            if (!document.getElementById('start-date').value || !document.getElementById('end-date').value) return;
+            if (end <= start) {
+                err.textContent = 'End date must be after start date.';
+                err.classList.remove('hidden');
+                return;
+            }
+            err.classList.add('hidden');
+            const days = Math.ceil((end - start) / 86400000);
+            const rental = days * gadget.price_per_day;
+            const fee = Math.round(rental * 0.05);
+            const total = rental + gadget.deposit + fee;
+            document.getElementById('days-count').textContent = days;
+            document.getElementById('rental-cost').textContent = inr(rental);
+            document.getElementById('service-fee').textContent = inr(fee);
+            document.getElementById('total-cost').textContent = inr(total);
+        }
+
+        document.getElementById('start-date').addEventListener('change', updatePricing);
+        document.getElementById('end-date').addEventListener('change', updatePricing);
+
+        document.getElementById('booking-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (!localStorage.getItem('cgr_user')) { window.location.href = 'auth.html'; return; }
+            const btn = document.getElementById('book-btn');
+            btn.textContent = 'Processing...';
+            btn.disabled = true;
+            setTimeout(() => {
+                const bookings = JSON.parse(localStorage.getItem('cgr_bookings') || '[]');
+                bookings.push({
+                    id: Date.now().toString(),
+                    gadget_id: gadget.id,
+                    gadget_name: gadget.name,
+                    gadget_image: gadget.images[0],
+                    start_date: document.getElementById('start-date').value,
+                    end_date: document.getElementById('end-date').value,
+                    total: document.getElementById('total-cost').textContent,
+                    status: 'Pending',
+                });
+                localStorage.setItem('cgr_bookings', JSON.stringify(bookings));
+                document.getElementById('success-modal').classList.remove('hidden');
+            }, 900);
+        });
+    </script>
+</body>
+
+</html>

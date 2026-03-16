@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard — CampusRent</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../styles/custom.css" />
+</head>
+
+<body class="bg-slate-950 text-white antialiased">
+    <div id="navbar"></div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-8">
+            <div>
+                <p class="text-blue-400 text-xs font-semibold uppercase tracking-widest mb-1">Overview</p>
+                <h1 class="text-2xl font-bold text-white">Dashboard</h1>
+                <p id="welcome-msg" class="text-slate-400 text-sm mt-1">Welcome back!</p>
+            </div>
+            <a href="list-gadget.html" class="btn-primary">+ List Gadget</a>
+        </div>
+
+        <!-- Stats -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <div class="stat-card">
+                <p class="text-xs text-slate-500 mb-2 uppercase tracking-wide">Active Rentals</p>
+                <p class="text-3xl font-extrabold text-blue-400" id="stat-active">0</p>
+            </div>
+            <div class="stat-card"
+                style="background:linear-gradient(135deg,rgba(147,51,234,0.1),rgba(147,51,234,0.05));border-color:rgba(147,51,234,0.2)">
+                <p class="text-xs text-slate-500 mb-2 uppercase tracking-wide">Total Bookings</p>
+                <p class="text-3xl font-extrabold text-purple-400" id="stat-total">0</p>
+            </div>
+            <div class="stat-card"
+                style="background:linear-gradient(135deg,rgba(16,185,129,0.08),rgba(16,185,129,0.03));border-color:rgba(16,185,129,0.15)">
+                <p class="text-xs text-slate-500 mb-2 uppercase tracking-wide">My Gadgets</p>
+                <p class="text-3xl font-extrabold text-emerald-400" id="stat-gadgets">0</p>
+            </div>
+            <div class="stat-card"
+                style="background:linear-gradient(135deg,rgba(245,158,11,0.08),rgba(245,158,11,0.03));border-color:rgba(245,158,11,0.15)">
+                <p class="text-xs text-slate-500 mb-2 uppercase tracking-wide">Earnings</p>
+                <p class="text-3xl font-extrabold text-yellow-400" id="stat-earnings">$0</p>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="flex gap-1 bg-slate-900 border border-white/5 rounded-xl p-1 mb-6 w-fit">
+            <button class="tab-btn tab-active px-5 py-2 text-sm rounded-lg transition" data-tab="bookings">My
+                Bookings</button>
+            <button class="tab-btn px-5 py-2 text-sm rounded-lg transition text-slate-400 hover:text-slate-200"
+                data-tab="gadgets">My Gadgets</button>
+            <button
+                class="tab-btn px-5 py-2 text-sm rounded-lg transition text-slate-400 hover:text-slate-200 flex items-center gap-2"
+                data-tab="notifications">
+                Notifications
+                <span id="notif-badge"
+                    class="hidden bg-blue-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center leading-none">3</span>
+            </button>
+        </div>
+
+        <!-- Bookings Tab -->
+        <div id="tab-bookings" class="tab-content">
+            <div id="bookings-list" class="space-y-3"></div>
+            <div id="bookings-empty" class="hidden text-center py-20">
+                <div class="text-5xl mb-4">📦</div>
+                <p class="text-slate-400 text-sm">No bookings yet. <a href="marketplace.html"
+                        class="text-blue-400 hover:underline">Browse gadgets</a></p>
+            </div>
+        </div>
+
+        <!-- My Gadgets Tab -->
+        <div id="tab-gadgets" class="tab-content hidden">
+            <div id="my-gadgets-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+            <div id="gadgets-empty" class="hidden text-center py-20">
+                <div class="text-5xl mb-4">🔧</div>
+                <p class="text-slate-400 text-sm">No gadgets listed. <a href="list-gadget.html"
+                        class="text-blue-400 hover:underline">List one now</a></p>
+            </div>
+        </div>
+
+        <!-- Notifications Tab -->
+        <div id="tab-notifications" class="tab-content hidden">
+            <div id="notifications-list" class="space-y-3"></div>
+        </div>
+    </div>
+
+    <div id="footer"></div>
+
+    <script type="module">
+        import { renderNavbar } from '../components/navbar.js';
+        import { renderFooter } from '../components/footer.js';
+        import { createGadgetCard } from '../components/gadget-card.js';
+        import { sampleGadgets } from '../data/sample-gadgets.js';
+
+        renderNavbar('dashboard');
+        renderFooter();
+
+        const user = JSON.parse(localStorage.getItem('cgr_user') || 'null');
+        if (!user) { window.location.href = 'auth.html'; }
+        else { document.getElementById('welcome-msg').textContent = `Welcome back, ${user.name}!`; }
+
+        // Bookings
+        const bookings = JSON.parse(localStorage.getItem('cgr_bookings') || '[]');
+        document.getElementById('stat-total').textContent = bookings.length;
+        document.getElementById('stat-active').textContent = bookings.filter(b => b.status === 'Pending').length;
+
+        const bookingsList = document.getElementById('bookings-list');
+        if (bookings.length === 0) {
+            document.getElementById('bookings-empty').classList.remove('hidden');
+        } else {
+            const statusStyle = { Pending: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20', Confirmed: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20', Completed: 'bg-slate-700 text-slate-400 border-white/10' };
+            bookings.forEach(b => {
+                const style = statusStyle[b.status] || statusStyle.Pending;
+                bookingsList.innerHTML += `
+          <div class="glass rounded-xl p-4 flex items-center gap-4 hover:border-blue-500/20 transition">
+            <img src="${b.gadget_image}" class="w-14 h-14 rounded-xl object-cover border border-white/5"/>
+            <div class="flex-1 min-w-0">
+              <p class="font-semibold text-white text-sm truncate">${b.gadget_name}</p>
+              <p class="text-xs text-slate-500 mt-0.5">${b.start_date} → ${b.end_date}</p>
+              <p class="text-xs text-blue-400 font-medium mt-1">Total: ${b.total}</p>
+            </div>
+            <span class="text-xs font-medium px-3 py-1 rounded-full border ${style} whitespace-nowrap">${b.status}</span>
+          </div>`;
+            });
+        }
+
+        // My Gadgets (demo)
+        const myGadgets = sampleGadgets.slice(0, 2);
+        document.getElementById('stat-gadgets').textContent = myGadgets.length;
+        document.getElementById('stat-earnings').textContent = '₹11,800';
+        const gadgetsList = document.getElementById('my-gadgets-list');
+        if (myGadgets.length === 0) {
+            document.getElementById('gadgets-empty').classList.remove('hidden');
+        } else {
+            myGadgets.forEach(g => { gadgetsList.innerHTML += createGadgetCard(g); });
+        }
+
+        // Notifications
+        const notifications = [
+            { icon: '📅', text: 'Your booking for MacBook Pro has been confirmed.', time: '2 hours ago', unread: true },
+            { icon: '⭐', text: 'Jordan K. left a 5-star review on your iPad Pro listing.', time: '1 day ago', unread: true },
+            { icon: '💰', text: 'You earned ₹3,700 from your Sony WH-1000XM5 rental.', time: '3 days ago', unread: false },
+        ];
+        document.getElementById('notif-badge').classList.remove('hidden');
+        const notifList = document.getElementById('notifications-list');
+        notifications.forEach(n => {
+            notifList.innerHTML += `
+        <div class="glass rounded-xl p-4 flex items-start gap-3 ${n.unread ? 'border-blue-500/20' : ''}">
+          <span class="text-xl mt-0.5">${n.icon}</span>
+          <div class="flex-1">
+            <p class="text-sm text-slate-200">${n.text}</p>
+            <p class="text-xs text-slate-600 mt-1">${n.time}</p>
+          </div>
+          ${n.unread ? '<div class="w-2 h-2 bg-blue-500 rounded-full mt-1.5 flex-shrink-0"></div>' : ''}
+        </div>`;
+        });
+
+        // Tab switching
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(b => {
+                    b.classList.remove('tab-active');
+                    b.classList.add('text-slate-400');
+                });
+                btn.classList.add('tab-active');
+                btn.classList.remove('text-slate-400');
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+                document.getElementById(`tab-${btn.dataset.tab}`).classList.remove('hidden');
+            });
+        });
+    </script>
+</body>
+
+</html>

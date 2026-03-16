@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gadget Map — CampusRent</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../styles/custom.css" />
+    <!-- Leaflet -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        #map {
+            height: 100%;
+            width: 100%;
+        }
+
+        /* Dark tile overlay to match app theme */
+        .leaflet-tile {
+            filter: brightness(0.85) saturate(0.7) hue-rotate(190deg);
+        }
+
+        /* Custom marker */
+        .cgr-marker {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50% 50% 50% 0;
+            transform: rotate(-45deg);
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .cgr-marker.unavailable {
+            background: linear-gradient(135deg, #475569, #334155);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+        }
+
+        .cgr-marker-inner {
+            transform: rotate(45deg);
+            font-size: 14px;
+            line-height: 1;
+        }
+
+        /* Popup */
+        .leaflet-popup-content-wrapper {
+            background: #1e293b !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+            border-radius: 16px !important;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6) !important;
+            padding: 0 !important;
+            overflow: hidden;
+        }
+
+        .leaflet-popup-content {
+            margin: 0 !important;
+            width: 240px !important;
+        }
+
+        .leaflet-popup-tip {
+            background: #1e293b !important;
+        }
+
+        .leaflet-popup-close-button {
+            color: #94a3b8 !important;
+            font-size: 18px !important;
+            top: 8px !important;
+            right: 10px !important;
+        }
+
+        .leaflet-popup-close-button:hover {
+            color: white !important;
+        }
+
+        /* Cluster */
+        .marker-cluster-small,
+        .marker-cluster-medium,
+        .marker-cluster-large {
+            background: rgba(37, 99, 235, 0.2) !important;
+        }
+
+        .marker-cluster-small div,
+        .marker-cluster-medium div,
+        .marker-cluster-large div {
+            background: rgba(37, 99, 235, 0.8) !important;
+            color: white !important;
+            font-weight: 700;
+        }
+
+        /* Sidebar scrollbar */
+        #sidebar-list::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        #sidebar-list::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        #sidebar-list::-webkit-scrollbar-thumb {
+            background: #1e3a5f;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-950 text-white antialiased flex flex-col h-screen overflow-hidden">
+
+    <div id="navbar" class="flex-shrink-0"></div>
+
+    <!-- Page layout -->
+    <div class="flex flex-1 overflow-hidden">
+
+        <!-- ── Sidebar ──────────────────────────────────────────────── -->
+        <div class="w-80 flex-shrink-0 bg-slate-900 border-r border-white/5 flex flex-col hidden md:flex">
+            <!-- Sidebar header -->
+            <div class="p-4 border-b border-white/5">
+                <p class="text-blue-400 text-xs font-semibold uppercase tracking-widest mb-1">Live Map</p>
+                <h2 class="text-lg font-bold text-white">Gadget Locations</h2>
+                <p class="text-slate-500 text-xs mt-1">Click a pin or listing to zoom in</p>
+
+                <!-- Search -->
+                <div class="relative mt-3">
+                    <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" fill="none"
+                        stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    <input type="text" id="map-search" placeholder="Search gadgets or locations..."
+                        class="input-dark pl-9 text-xs py-2" />
+                </div>
+
+                <!-- Filter pills -->
+                <div class="flex gap-2 mt-3 flex-wrap">
+                    <button data-filter="all"
+                        class="map-filter-btn active-filter text-xs px-3 py-1 rounded-full border border-blue-500 bg-blue-500/10 text-blue-400 transition">All</button>
+                    <button data-filter="available"
+                        class="map-filter-btn text-xs px-3 py-1 rounded-full border border-white/10 text-slate-400 hover:border-blue-500/40 transition">Available</button>
+                    <button data-filter="unavailable"
+                        class="map-filter-btn text-xs px-3 py-1 rounded-full border border-white/10 text-slate-400 hover:border-blue-500/40 transition">Rented</button>
+                </div>
+            </div>
+
+            <!-- Gadget list -->
+            <div id="sidebar-list" class="flex-1 overflow-y-auto p-3 space-y-2"></div>
+
+            <!-- Legend -->
+            <div class="p-4 border-t border-white/5 flex items-center gap-4 text-xs text-slate-500">
+                <div class="flex items-center gap-1.5">
+                    <div class="w-3 h-3 rounded-full bg-blue-500"></div> Available
+                </div>
+                <div class="flex items-center gap-1.5">
+                    <div class="w-3 h-3 rounded-full bg-slate-600"></div> Rented
+                </div>
+                <div class="flex items-center gap-1.5">
+                    <div class="w-3 h-3 rounded-full bg-emerald-500"></div> Your location
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Map ──────────────────────────────────────────────────── -->
+        <div class="flex-1 relative">
+            <div id="map" class="absolute inset-0"></div>
+
+            <!-- Mobile toggle -->
+            <button id="mobile-sidebar-btn"
+                class="md:hidden absolute top-3 left-3 z-[1000] glass px-3 py-2 rounded-xl text-xs font-medium text-white flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+                Listings
+            </button>
+
+            <!-- Locate me button -->
+            <button id="locate-btn"
+                class="absolute bottom-6 right-4 z-[1000] glass px-3 py-2.5 rounded-xl text-xs font-medium text-white flex items-center gap-2 hover:border-blue-500/40 transition">
+                <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                My Location
+            </button>
+
+            <!-- Stats overlay -->
+            <div class="absolute top-3 right-4 z-[1000] flex gap-2">
+                <div class="glass px-3 py-2 rounded-xl text-xs">
+                    <span class="text-blue-400 font-bold" id="map-available-count">0</span>
+                    <span class="text-slate-400 ml-1">available</span>
+                </div>
+                <div class="glass px-3 py-2 rounded-xl text-xs">
+                    <span class="text-slate-400 font-bold" id="map-total-count">0</span>
+                    <span class="text-slate-400 ml-1">total</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile sidebar drawer -->
+    <div id="mobile-sidebar" class="md:hidden hidden fixed inset-0 z-[2000] flex">
+        <div class="w-80 bg-slate-900 border-r border-white/5 flex flex-col h-full overflow-hidden">
+            <div class="p-4 border-b border-white/5 flex items-center justify-between">
+                <h2 class="font-bold text-white">Gadget Listings</h2>
+                <button id="close-mobile-sidebar" class="text-slate-400 hover:text-white">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div id="mobile-sidebar-list" class="flex-1 overflow-y-auto p-3 space-y-2"></div>
+        </div>
+        <div class="flex-1 bg-black/50" id="mobile-sidebar-overlay"></div>
+    </div>
+
+    <div id="footer" class="flex-shrink-0"></div>
+
+    <script type="module">
+        import { renderNavbar } from '../components/navbar.js';
+        import { renderFooter } from '../components/footer.js';
+        import { sampleGadgets, inr } from '../data/sample-gadgets.js';
+
+        renderNavbar('map');
+        // No footer on map page to maximize space
+        document.getElementById('footer').remove();
+
+        // ── Init Leaflet map ──────────────────────────────────────────
+        const map = L.map('map', {
+            center: [16.5, 80.6],
+            zoom: 8,
+            zoomControl: false,
+        });
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 19,
+        }).addTo(map);
+
+        // Custom zoom control position
+        L.control.zoom({ position: 'bottomleft' }).addTo(map);
+
+        // ── Custom marker icon factory ────────────────────────────────
+        function makeIcon(gadget) {
+            const emoji = { Laptops: '💻', Cameras: '📷', Tablets: '📱', Drones: '🚁', Audio: '🎧', Electronics: '⚡', 'VR/AR': '🥽' };
+            const icon = emoji[gadget.category] || '📦';
+            return L.divIcon({
+                className: '',
+                html: `<div class="cgr-marker ${gadget.available ? '' : 'unavailable'}">
+                 <div class="cgr-marker-inner">${icon}</div>
+               </div>`,
+                iconSize: [36, 36],
+                iconAnchor: [18, 36],
+                popupAnchor: [0, -38],
+            });
+        }
+
+        // ── Popup HTML ────────────────────────────────────────────────
+        function makePopup(g) {
+            return `
+        <div>
+          <div class="relative h-28 overflow-hidden">
+            <img src="${g.images[0]}" class="w-full h-full object-cover"/>
+            <div class="absolute inset-0 bg-gradient-to-t from-slate-900/80 to-transparent"></div>
+            <span class="absolute bottom-2 left-2 text-xs font-medium px-2 py-0.5 rounded-full ${g.available ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-red-500/20 text-red-400 border border-red-500/30'}">
+              ${g.available ? '● Available' : '● Rented'}
+            </span>
+          </div>
+          <div class="p-3">
+            <p class="font-semibold text-white text-sm mb-0.5">${g.name}</p>
+            <p class="text-xs text-slate-500 mb-2">📍 ${g.location}</p>
+            <div class="flex items-center justify-between">
+              <div>
+                <span class="text-blue-400 font-bold">${inr(g.price_per_day)}</span>
+                <span class="text-slate-500 text-xs">/day</span>
+              </div>
+              <span class="text-xs text-slate-400">by ${g.owner}</span>
+            </div>
+            <a href="gadget-details.html?id=${g.id}"
+              class="mt-3 block w-full text-center text-xs font-semibold py-2 rounded-lg ${g.available ? 'bg-blue-600 hover:bg-blue-500 text-white' : 'bg-slate-700 text-slate-500 cursor-not-allowed pointer-events-none'} transition">
+              ${g.available ? 'View & Rent' : 'Unavailable'}
+            </a>
+          </div>
+        </div>`;
+        }
+
+        // ── Sidebar card HTML ─────────────────────────────────────────
+        function makeSidebarCard(g) {
+            return `
+        <div class="sidebar-card cursor-pointer glass rounded-xl p-3 hover:border-blue-500/30 transition group"
+             data-id="${g.id}" data-lat="${g.lat}" data-lng="${g.lng}">
+          <div class="flex gap-3 items-center">
+            <div class="relative w-12 h-12 rounded-lg overflow-hidden flex-shrink-0">
+              <img src="${g.images[0]}" class="w-full h-full object-cover"/>
+              <div class="absolute inset-0 ${g.available ? 'bg-emerald-500/10' : 'bg-red-500/10'}"></div>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-xs font-semibold text-white truncate group-hover:text-blue-400 transition">${g.name}</p>
+              <p class="text-xs text-slate-500 truncate mt-0.5">📍 ${g.location}</p>
+              <div class="flex items-center justify-between mt-1">
+                <span class="text-blue-400 text-xs font-bold">${inr(g.price_per_day)}/day</span>
+                <span class="text-xs px-1.5 py-0.5 rounded-full ${g.available ? 'text-emerald-400 bg-emerald-500/10' : 'text-slate-500 bg-slate-700/50'}">
+                  ${g.available ? '●' : '○'} ${g.available ? 'Free' : 'Rented'}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>`;
+        }
+
+        // ── Place markers ─────────────────────────────────────────────
+        const markers = {};
+        let allGadgets = [...sampleGadgets];
+
+        function renderMap(gadgets) {
+            // Clear old markers
+            Object.values(markers).forEach(m => map.removeLayer(m));
+            Object.keys(markers).forEach(k => delete markers[k]);
+
+            gadgets.forEach(g => {
+                const marker = L.marker([g.lat, g.lng], { icon: makeIcon(g) })
+                    .addTo(map)
+                    .bindPopup(makePopup(g), { maxWidth: 240, minWidth: 240 });
+                markers[g.id] = marker;
+            });
+
+            // Update counts
+            document.getElementById('map-available-count').textContent = gadgets.filter(g => g.available).length;
+            document.getElementById('map-total-count').textContent = gadgets.length;
+        }
+
+        function renderSidebar(gadgets, containerId = 'sidebar-list') {
+            const el = document.getElementById(containerId);
+            el.innerHTML = gadgets.length
+                ? gadgets.map(makeSidebarCard).join('')
+                : `<div class="text-center py-10 text-slate-500 text-sm">No gadgets match your filter.</div>`;
+
+            el.querySelectorAll('.sidebar-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    const lat = parseFloat(card.dataset.lat);
+                    const lng = parseFloat(card.dataset.lng);
+                    const id = card.dataset.id;
+                    map.flyTo([lat, lng], 17, { duration: 0.8 });
+                    setTimeout(() => markers[id]?.openPopup(), 900);
+                    // Close mobile sidebar
+                    document.getElementById('mobile-sidebar').classList.add('hidden');
+                });
+            });
+        }
+
+        // ── Filter & search logic ─────────────────────────────────────
+        let activeFilter = 'all';
+        let searchQuery = '';
+
+        function applyFilters() {
+            let filtered = allGadgets.filter(g => {
+                const matchFilter = activeFilter === 'all' || (activeFilter === 'available' ? g.available : !g.available);
+                const matchSearch = !searchQuery ||
+                    g.name.toLowerCase().includes(searchQuery) ||
+                    g.location.toLowerCase().includes(searchQuery) ||
+                    g.owner.toLowerCase().includes(searchQuery) ||
+                    g.category.toLowerCase().includes(searchQuery);
+                return matchFilter && matchSearch;
+            });
+            renderMap(filtered);
+            renderSidebar(filtered, 'sidebar-list');
+            renderSidebar(filtered, 'mobile-sidebar-list');
+        }
+
+        document.querySelectorAll('.map-filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                activeFilter = btn.dataset.filter;
+                document.querySelectorAll('.map-filter-btn').forEach(b => {
+                    b.classList.remove('active-filter', 'border-blue-500', 'bg-blue-500/10', 'text-blue-400');
+                    b.classList.add('border-white/10', 'text-slate-400');
+                });
+                btn.classList.add('active-filter', 'border-blue-500', 'bg-blue-500/10', 'text-blue-400');
+                btn.classList.remove('border-white/10', 'text-slate-400');
+                applyFilters();
+            });
+        });
+
+        document.getElementById('map-search').addEventListener('input', (e) => {
+            searchQuery = e.target.value.toLowerCase().trim();
+            applyFilters();
+        });
+
+        // ── Locate me ─────────────────────────────────────────────────
+        let userMarker = null;
+        document.getElementById('locate-btn').addEventListener('click', () => {
+            if (!navigator.geolocation) return alert('Geolocation not supported by your browser.');
+            navigator.geolocation.getCurrentPosition(
+                ({ coords }) => {
+                    const { latitude: lat, longitude: lng } = coords;
+                    if (userMarker) map.removeLayer(userMarker);
+                    userMarker = L.circleMarker([lat, lng], {
+                        radius: 10,
+                        fillColor: '#10b981',
+                        color: '#fff',
+                        weight: 2,
+                        fillOpacity: 0.9,
+                    }).addTo(map).bindPopup('<div style="color:#1e293b;font-weight:600;font-size:12px">📍 You are here</div>').openPopup();
+                    map.flyTo([lat, lng], 16, { duration: 1 });
+                },
+                () => alert('Could not get your location. Please allow location access.')
+            );
+        });
+
+        // ── Mobile sidebar ────────────────────────────────────────────
+        document.getElementById('mobile-sidebar-btn').addEventListener('click', () => {
+            document.getElementById('mobile-sidebar').classList.remove('hidden');
+        });
+        document.getElementById('close-mobile-sidebar').addEventListener('click', () => {
+            document.getElementById('mobile-sidebar').classList.add('hidden');
+        });
+        document.getElementById('mobile-sidebar-overlay').addEventListener('click', () => {
+            document.getElementById('mobile-sidebar').classList.add('hidden');
+        });
+
+        // ── Initial render ────────────────────────────────────────────
+        applyFilters();
+
+        // Fit map to all markers
+        const bounds = L.latLngBounds(allGadgets.map(g => [g.lat, g.lng]));
+        map.fitBounds(bounds, { padding: [40, 40] });
+    </script>
+</body>
+
+</html>
