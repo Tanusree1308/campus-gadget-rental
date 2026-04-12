@@ -119,9 +119,12 @@
         import { renderNavbar } from '../components/navbar.js';
         import { renderFooter } from '../components/footer.js';
         import { sampleGadgets, inr } from '../data/sample-gadgets.js';
+        import { renderChat } from '../components/chat.js';
 
         renderNavbar();
         renderFooter();
+        window.__cgr__ = { sampleGadgets };
+        renderChat();
 
         const params = new URLSearchParams(window.location.search);
         const gadget = sampleGadgets.find(g => g.id === params.get('id')) || sampleGadgets[0];

@@ -94,9 +94,12 @@
         import { renderFooter } from '../components/footer.js';
         import { createGadgetCard } from '../components/gadget-card.js';
         import { sampleGadgets } from '../data/sample-gadgets.js';
+        import { renderChat } from '../components/chat.js';
 
         renderNavbar('dashboard');
         renderFooter();
+        window.__cgr__ = { sampleGadgets };
+        renderChat();
 
         const user = JSON.parse(localStorage.getItem('cgr_user') || 'null');
         if (!user) { window.location.href = 'auth.html'; }

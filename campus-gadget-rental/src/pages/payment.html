@@ -255,9 +255,12 @@
         import { renderNavbar } from '../components/navbar.js';
         import { renderFooter } from '../components/footer.js';
         import { sampleGadgets, inr } from '../data/sample-gadgets.js';
+        import { renderChat } from '../components/chat.js';
 
         renderNavbar();
         renderFooter();
+        window.__cgr__ = { sampleGadgets };
+        renderChat();
 
         // ── Verified session check ────────────────────────────────────
         const user = JSON.parse(localStorage.getItem('cgr_user') || 'null');
