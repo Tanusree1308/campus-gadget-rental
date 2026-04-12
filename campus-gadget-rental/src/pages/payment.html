@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Payment — CampusRent</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../styles/custom.css" />
+</head>
+
+<body class="bg-slate-950 text-white antialiased">
+    <div id="navbar"></div>
+
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <a href="javascript:history.back()"
+            class="inline-flex items-center gap-1.5 text-sm text-slate-400 hover:text-blue-400 transition mb-8">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+            Back to Booking
+        </a>
+
+        <div class="mb-8">
+            <p class="text-blue-400 text-xs font-semibold uppercase tracking-widest mb-1">Secure Checkout</p>
+            <h1 class="text-2xl font-bold text-white">Payment</h1>
+        </div>
+
+        <!-- Verified session banner -->
+        <div id="session-banner"
+            class="flex items-center gap-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl px-4 py-3 mb-6">
+            <svg class="w-4 h-4 text-emerald-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
+            <div>
+                <p class="text-emerald-400 text-xs font-semibold">Verified Session Active</p>
+                <p id="session-user" class="text-slate-400 text-xs mt-0.5">Logged in as —</p>
+            </div>
+            <div class="ml-auto flex items-center gap-1.5">
+                <div class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
+                <span class="text-emerald-400 text-xs font-medium">Secure</span>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
+
+            <!-- Payment Form -->
+            <div class="lg:col-span-3 space-y-5">
+
+                <!-- Payment method -->
+                <div class="glass rounded-2xl p-6">
+                    <h2 class="font-semibold text-white mb-4">Payment Method</h2>
+                    <div class="grid grid-cols-3 gap-3 mb-5">
+                        <label class="cursor-pointer">
+                            <input type="radio" name="pay-method" value="upi" class="sr-only" checked />
+                            <div
+                                class="pay-method-label border border-blue-500 bg-blue-500/10 rounded-xl p-3 text-center transition">
+                                <div class="text-xl mb-1">📱</div>
+                                <p class="text-xs font-semibold text-white">UPI</p>
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="pay-method" value="card" class="sr-only" />
+                            <div
+                                class="pay-method-label border border-white/10 rounded-xl p-3 text-center hover:border-blue-500/40 transition">
+                                <div class="text-xl mb-1">💳</div>
+                                <p class="text-xs font-semibold text-white">Card</p>
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="pay-method" value="netbanking" class="sr-only" />
+                            <div
+                                class="pay-method-label border border-white/10 rounded-xl p-3 text-center hover:border-blue-500/40 transition">
+                                <div class="text-xl mb-1">🏦</div>
+                                <p class="text-xs font-semibold text-white">Net Banking</p>
+                            </div>
+                        </label>
+                    </div>
+
+                    <!-- UPI fields -->
+                    <div id="upi-fields" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-400 mb-1.5 uppercase tracking-wide">UPI
+                                ID</label>
+                            <input type="text" id="upi-id" placeholder="yourname@upi" class="input-dark" />
+                        </div>
+                        <p class="text-xs text-slate-600">Supported: GPay, PhonePe, Paytm, BHIM</p>
+                    </div>
+
+                    <!-- Card fields -->
+                    <div id="card-fields" class="space-y-4 hidden">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-400 mb-1.5 uppercase tracking-wide">Card
+                                Number</label>
+                            <input type="text" id="card-number" placeholder="1234 5678 9012 3456" maxlength="19"
+                                class="input-dark" />
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label
+                                    class="block text-xs font-medium text-slate-400 mb-1.5 uppercase tracking-wide">Expiry</label>
+                                <input type="text" id="card-expiry" placeholder="MM / YY" maxlength="7"
+                                    class="input-dark" />
+                            </div>
+                            <div>
+                                <label
+                                    class="block text-xs font-medium text-slate-400 mb-1.5 uppercase tracking-wide">CVV</label>
+                                <input type="text" id="card-cvv" placeholder="•••" maxlength="3" class="input-dark" />
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-400 mb-1.5 uppercase tracking-wide">Name
+                                on Card</label>
+                            <input type="text" id="card-name" placeholder="Full name" class="input-dark" />
+                        </div>
+                    </div>
+
+                    <!-- Net banking fields -->
+                    <div id="netbanking-fields" class="space-y-4 hidden">
+                        <div>
+                            <label
+                                class="block text-xs font-medium text-slate-400 mb-1.5 uppercase tracking-wide">Select
+                                Bank</label>
+                            <select id="bank-select" class="input-dark cursor-pointer">
+                                <option value="">Choose your bank</option>
+                                <option>State Bank of India</option>
+                                <option>HDFC Bank</option>
+                                <option>ICICI Bank</option>
+                                <option>Axis Bank</option>
+                                <option>Kotak Mahindra Bank</option>
+                                <option>Andhra Bank</option>
+                                <option>Indian Bank</option>
+                                <option>Other</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Billing info -->
+                <div class="glass rounded-2xl p-6">
+                    <h2 class="font-semibold text-white mb-4">Billing Details</h2>
+                    <div class="space-y-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label
+                                    class="block text-xs font-medium text-slate-400 mb-1.5 uppercase tracking-wide">Full
+                                    Name</label>
+                                <input type="text" id="billing-name" class="input-dark" />
+                            </div>
+                            <div>
+                                <label
+                                    class="block text-xs font-medium text-slate-400 mb-1.5 uppercase tracking-wide">Phone</label>
+                                <input type="tel" id="billing-phone" placeholder="+91 XXXXX XXXXX" class="input-dark" />
+                            </div>
+                        </div>
+                        <div>
+                            <label
+                                class="block text-xs font-medium text-slate-400 mb-1.5 uppercase tracking-wide">College
+                                / Institution</label>
+                            <input type="text" id="billing-college" placeholder="e.g. Andhra University, Vizag"
+                                class="input-dark" />
+                        </div>
+                    </div>
+                </div>
+
+                <div id="pay-error"
+                    class="hidden text-red-400 text-xs bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">
+                </div>
+
+                <button id="pay-btn" class="btn-primary w-full text-center text-base py-4">
+                    Pay <span id="pay-amount">₹0</span> Securely →
+                </button>
+
+                <p class="text-center text-xs text-slate-600">
+                    🔒 256-bit SSL encrypted · Your payment info is never stored
+                </p>
+            </div>
+
+            <!-- Order Summary -->
+            <div class="lg:col-span-2">
+                <div class="glass rounded-2xl p-6 sticky top-24 space-y-5">
+                    <h2 class="font-semibold text-white">Order Summary</h2>
+
+                    <div id="payment-gadget-summary"></div>
+
+                    <div class="border-t border-white/5 pt-4 space-y-3 text-sm">
+                        <div class="flex justify-between text-slate-400">
+                            <span>Rental (<span id="p-days">0</span> days)</span>
+                            <span class="text-white" id="p-rental">₹0</span>
+                        </div>
+                        <div class="flex justify-between text-slate-400">
+                            <span>Security deposit</span>
+                            <span class="text-white" id="p-deposit">₹0</span>
+                        </div>
+                        <div class="flex justify-between text-slate-400">
+                            <span>Service fee (5%)</span>
+                            <span class="text-white" id="p-fee">₹0</span>
+                        </div>
+                        <div class="border-t border-white/5 pt-3 flex justify-between font-bold">
+                            <span class="text-white">Total</span>
+                            <span class="text-blue-400 text-lg" id="p-total">₹0</span>
+                        </div>
+                    </div>
+
+                    <!-- Booking dates -->
+                    <div class="bg-slate-800/50 rounded-xl p-3 text-xs space-y-2">
+                        <div class="flex justify-between text-slate-400">
+                            <span>Start date</span>
+                            <span class="text-white" id="p-start">—</span>
+                        </div>
+                        <div class="flex justify-between text-slate-400">
+                            <span>End date</span>
+                            <span class="text-white" id="p-end">—</span>
+                        </div>
+                        <div class="flex justify-between text-slate-400">
+                            <span>Pickup</span>
+                            <span class="text-white" id="p-pickup">—</span>
+                        </div>
+                    </div>
+
+                    <div class="text-xs text-slate-600 space-y-1">
+                        <p>✓ Free cancellation within 2 hours</p>
+                        <p>✓ Deposit refunded on safe return</p>
+                        <p>✓ 24/7 support available</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="success-modal"
+        class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div class="glass rounded-2xl p-8 max-w-sm w-full text-center glow-blue">
+            <div
+                class="w-20 h-20 bg-emerald-500/10 border border-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-5">
+                <svg class="w-10 h-10 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+            </div>
+            <h3 class="text-xl font-bold text-white mb-2">Payment Successful!</h3>
+            <p class="text-slate-400 text-sm mb-2">Booking confirmed. The owner has been notified.</p>
+            <p id="modal-booking-id" class="text-xs text-blue-400 font-mono mb-6"></p>
+            <div class="space-y-3">
+                <a href="dashboard.html" class="btn-primary block w-full text-center">View My Bookings</a>
+                <a href="marketplace.html" class="btn-secondary block w-full text-center">Browse More</a>
+            </div>
+        </div>
+    </div>
+
+    <div id="footer"></div>
+
+    <script type="module">
+        import { renderNavbar } from '../components/navbar.js';
+        import { renderFooter } from '../components/footer.js';
+        import { sampleGadgets, inr } from '../data/sample-gadgets.js';
+
+        renderNavbar();
+        renderFooter();
+
+        // ── Verified session check ────────────────────────────────────
+        const user = JSON.parse(localStorage.getItem('cgr_user') || 'null');
+        if (!user) { window.location.href = 'auth.html'; }
+        else {
+            document.getElementById('session-user').textContent =
+                `Logged in as ${user.name} · ${user.email}`;
+            document.getElementById('billing-name').value = user.name || '';
+        }
+
+        // ── Load booking data from URL params ─────────────────────────
+        const params = new URLSearchParams(window.location.search);
+        const gadget = sampleGadgets.find(g => g.id === params.get('id')) || sampleGadgets[0];
+        const startDate = params.get('start') || '';
+        const endDate = params.get('end') || '';
+        const pickup = params.get('pickup') || gadget.location;
+
+        const days = startDate && endDate
+            ? Math.max(1, Math.ceil((new Date(endDate) - new Date(startDate)) / 86400000))
+            : 1;
+        const rental = days * gadget.price_per_day;
+        const fee = Math.round(rental * 0.05);
+        const total = rental + gadget.deposit + fee;
+
+        // Populate summary
+        document.getElementById('payment-gadget-summary').innerHTML = `
+            <div class="flex gap-3 items-center">
+                <img src="${gadget.images[0]}" class="w-14 h-14 rounded-xl object-cover border border-white/5"/>
+                <div>
+                    <p class="font-semibold text-white text-sm">${gadget.name}</p>
+                    <p class="text-xs text-slate-500 mt-0.5">${gadget.category} · ${gadget.condition}</p>
+                    <p class="text-blue-400 font-bold text-sm mt-1">${inr(gadget.price_per_day)}/day</p>
+                </div>
+            </div>`;
+
+        document.getElementById('p-days').textContent = days;
+        document.getElementById('p-rental').textContent = inr(rental);
+        document.getElementById('p-deposit').textContent = inr(gadget.deposit);
+        document.getElementById('p-fee').textContent = inr(fee);
+        document.getElementById('p-total').textContent = inr(total);
+        document.getElementById('p-start').textContent = startDate || '—';
+        document.getElementById('p-end').textContent = endDate || '—';
+        document.getElementById('p-pickup').textContent = pickup;
+        document.getElementById('pay-amount').textContent = inr(total);
+
+        // ── Payment method toggle ─────────────────────────────────────
+        document.querySelectorAll('input[name="pay-method"]').forEach(radio => {
+            radio.addEventListener('change', () => {
+                document.querySelectorAll('.pay-method-label').forEach(l => {
+                    l.classList.remove('border-blue-500', 'bg-blue-500/10');
+                    l.classList.add('border-white/10');
+                });
+                radio.nextElementSibling.classList.add('border-blue-500', 'bg-blue-500/10');
+                radio.nextElementSibling.classList.remove('border-white/10');
+                document.getElementById('upi-fields').classList.add('hidden');
+                document.getElementById('card-fields').classList.add('hidden');
+                document.getElementById('netbanking-fields').classList.add('hidden');
+                document.getElementById(`${radio.value}-fields`).classList.remove('hidden');
+            });
+        });
+
+        // Card number formatting
+        document.getElementById('card-number')?.addEventListener('input', (e) => {
+            e.target.value = e.target.value.replace(/\D/g, '').replace(/(.{4})/g, '$1 ').trim();
+        });
+        document.getElementById('card-expiry')?.addEventListener('input', (e) => {
+            e.target.value = e.target.value.replace(/\D/g, '').replace(/^(\d{2})(\d)/, '$1 / $2');
+        });
+
+        // ── Pay button ────────────────────────────────────────────────
+        document.getElementById('pay-btn').addEventListener('click', () => {
+            const method = document.querySelector('input[name="pay-method"]:checked').value;
+            const err = document.getElementById('pay-error');
+
+            // Basic validation
+            if (method === 'upi' && !document.getElementById('upi-id').value.includes('@')) {
+                err.textContent = 'Please enter a valid UPI ID (e.g. name@upi).';
+                err.classList.remove('hidden'); return;
+            }
+            if (method === 'card') {
+                const num = document.getElementById('card-number').value.replace(/\s/g, '');
+                if (num.length < 16) { err.textContent = 'Enter a valid 16-digit card number.'; err.classList.remove('hidden'); return; }
+                if (!document.getElementById('card-cvv').value) { err.textContent = 'Enter CVV.'; err.classList.remove('hidden'); return; }
+            }
+            if (method === 'netbanking' && !document.getElementById('bank-select').value) {
+                err.textContent = 'Please select your bank.'; err.classList.remove('hidden'); return;
+            }
+            err.classList.add('hidden');
+
+            const btn = document.getElementById('pay-btn');
+            btn.textContent = 'Processing payment...';
+            btn.disabled = true;
+
+            // Simulate payment processing
+            setTimeout(() => {
+                const bookingId = 'CGR' + Date.now().toString().slice(-8).toUpperCase();
+
+                // Save booking
+                const bookings = JSON.parse(localStorage.getItem('cgr_bookings') || '[]');
+                const newBooking = {
+                    id: bookingId,
+                    gadget_id: gadget.id,
+                    gadget_name: gadget.name,
+                    gadget_image: gadget.images[0],
+                    start_date: startDate,
+                    end_date: endDate,
+                    pickup_location: pickup,
+                    days, rental: inr(rental),
+                    deposit: inr(gadget.deposit),
+                    service_fee: inr(fee),
+                    total: inr(total),
+                    status: 'Confirmed',
+                    paid_via: method,
+                    booked_at: new Date().toISOString(),
+                };
+                bookings.push(newBooking);
+                localStorage.setItem('cgr_bookings', JSON.stringify(bookings));
+
+                // Save notifications
+                const notifs = JSON.parse(localStorage.getItem('cgr_notifications') || '[]');
+                notifs.unshift(
+                    { icon: '✅', text: `Booking confirmed for ${gadget.name}. Booking ID: ${bookingId}`, time: 'Just now', unread: true, type: 'confirmation' },
+                    { icon: '🔔', text: `Return reminder: Please return ${gadget.name} by ${endDate}.`, time: 'Scheduled', unread: true, type: 'return_reminder' },
+                    { icon: '🛡️', text: `Your session is verified and payment of ${inr(total)} was processed securely.`, time: 'Just now', unread: false, type: 'security' }
+                );
+                localStorage.setItem('cgr_notifications', JSON.stringify(notifs));
+
+                document.getElementById('modal-booking-id').textContent = `Booking ID: ${bookingId}`;
+                document.getElementById('success-modal').classList.remove('hidden');
+            }, 1500);
+        });
+    </script>
+</body>
+
+</html>

@@ -170,24 +170,12 @@
         document.getElementById('booking-form').addEventListener('submit', (e) => {
             e.preventDefault();
             if (!localStorage.getItem('cgr_user')) { window.location.href = 'auth.html'; return; }
-            const btn = document.getElementById('book-btn');
-            btn.textContent = 'Processing...';
-            btn.disabled = true;
-            setTimeout(() => {
-                const bookings = JSON.parse(localStorage.getItem('cgr_bookings') || '[]');
-                bookings.push({
-                    id: Date.now().toString(),
-                    gadget_id: gadget.id,
-                    gadget_name: gadget.name,
-                    gadget_image: gadget.images[0],
-                    start_date: document.getElementById('start-date').value,
-                    end_date: document.getElementById('end-date').value,
-                    total: document.getElementById('total-cost').textContent,
-                    status: 'Pending',
-                });
-                localStorage.setItem('cgr_bookings', JSON.stringify(bookings));
-                document.getElementById('success-modal').classList.remove('hidden');
-            }, 900);
+            const start = document.getElementById('start-date').value;
+            const end = document.getElementById('end-date').value;
+            const pickup = document.getElementById('pickup-location').value || gadget.location;
+            if (!start || !end) return;
+            // Redirect to payment page with booking details as params
+            window.location.href = `payment.html?id=${gadget.id}&start=${start}&end=${end}&pickup=${encodeURIComponent(pickup)}`;
         });
     </script>
 </body>

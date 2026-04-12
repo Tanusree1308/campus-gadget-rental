@@ -42,7 +42,7 @@
             <div class="stat-card"
                 style="background:linear-gradient(135deg,rgba(245,158,11,0.08),rgba(245,158,11,0.03));border-color:rgba(245,158,11,0.15)">
                 <p class="text-xs text-slate-500 mb-2 uppercase tracking-wide">Earnings</p>
-                <p class="text-3xl font-extrabold text-yellow-400" id="stat-earnings">$0</p>
+                <p class="text-3xl font-extrabold text-yellow-400" id="stat-earnings">₹0</p>
             </div>
         </div>
 
@@ -121,8 +121,12 @@
               <p class="font-semibold text-white text-sm truncate">${b.gadget_name}</p>
               <p class="text-xs text-slate-500 mt-0.5">${b.start_date} → ${b.end_date}</p>
               <p class="text-xs text-blue-400 font-medium mt-1">Total: ${b.total}</p>
+              ${b.id ? `<p class="text-xs text-slate-600 mt-0.5">ID: ${b.id}</p>` : ''}
             </div>
-            <span class="text-xs font-medium px-3 py-1 rounded-full border ${style} whitespace-nowrap">${b.status}</span>
+            <div class="flex flex-col items-end gap-2">
+              <span class="text-xs font-medium px-3 py-1 rounded-full border ${style} whitespace-nowrap">${b.status}</span>
+              ${b.status === 'Pending' ? `<a href="payment.html?id=${b.gadget_id}" class="text-xs text-blue-400 hover:underline">Pay Now →</a>` : ''}
+            </div>
           </div>`;
             });
         }
@@ -138,24 +142,71 @@
             myGadgets.forEach(g => { gadgetsList.innerHTML += createGadgetCard(g); });
         }
 
-        // Notifications
-        const notifications = [
-            { icon: '📅', text: 'Your booking for MacBook Pro has been confirmed.', time: '2 hours ago', unread: true },
-            { icon: '⭐', text: 'Jordan K. left a 5-star review on your iPad Pro listing.', time: '1 day ago', unread: true },
-            { icon: '💰', text: 'You earned ₹3,700 from your Sony WH-1000XM5 rental.', time: '3 days ago', unread: false },
+        // Notifications — merge saved + demo
+        const savedNotifs = JSON.parse(localStorage.getItem('cgr_notifications') || '[]');
+        const demoNotifs = [
+            { icon: '📅', text: 'Your booking for MacBook Pro has been confirmed. Booking ID: CGR20480112', time: '2 hours ago', unread: true, type: 'confirmation' },
+            { icon: '⏰', text: 'Return reminder: Please return Sony WH-1000XM5 by tomorrow (Apr 13).', time: '5 hours ago', unread: true, type: 'return_reminder' },
+            { icon: '🔧', text: 'Maintenance alert: Your DJI Mini 3 Pro listing has been flagged for a condition review.', time: '1 day ago', unread: true, type: 'maintenance' },
+            { icon: '⭐', text: 'Priya S. left a 5-star review on your iPad Pro listing.', time: '1 day ago', unread: false, type: 'review' },
+            { icon: '🛡️', text: 'Verified session: You logged in from a new device. If this wasn\'t you, secure your account.', time: '2 days ago', unread: false, type: 'security' },
+            { icon: '💰', text: 'You earned ₹3,700 from your Sony WH-1000XM5 rental.', time: '3 days ago', unread: false, type: 'earnings' },
+            { icon: '🔔', text: 'Return reminder: Canon EOS R50 is due for return in 2 days (Apr 14).', time: '3 days ago', unread: false, type: 'return_reminder' },
         ];
-        document.getElementById('notif-badge').classList.remove('hidden');
+        const allNotifs = [...savedNotifs, ...demoNotifs];
+        const unreadCount = allNotifs.filter(n => n.unread).length;
+        if (unreadCount > 0) {
+            document.getElementById('notif-badge').textContent = unreadCount > 9 ? '9+' : unreadCount;
+            document.getElementById('notif-badge').classList.remove('hidden');
+        }
+
+        const typeStyle = {
+            confirmation: 'border-emerald-500/20 bg-emerald-500/5',
+            return_reminder: 'border-yellow-500/20 bg-yellow-500/5',
+            maintenance: 'border-orange-500/20 bg-orange-500/5',
+            security: 'border-blue-500/20 bg-blue-500/5',
+            review: 'border-purple-500/20 bg-purple-500/5',
+            earnings: 'border-yellow-500/20 bg-yellow-500/5',
+        };
+
         const notifList = document.getElementById('notifications-list');
-        notifications.forEach(n => {
-            notifList.innerHTML += `
-        <div class="glass rounded-xl p-4 flex items-start gap-3 ${n.unread ? 'border-blue-500/20' : ''}">
-          <span class="text-xl mt-0.5">${n.icon}</span>
-          <div class="flex-1">
-            <p class="text-sm text-slate-200">${n.text}</p>
-            <p class="text-xs text-slate-600 mt-1">${n.time}</p>
-          </div>
-          ${n.unread ? '<div class="w-2 h-2 bg-blue-500 rounded-full mt-1.5 flex-shrink-0"></div>' : ''}
-        </div>`;
+
+        // Filter tabs
+        notifList.insertAdjacentHTML('beforebegin', `
+            <div class="flex gap-2 mb-4 flex-wrap">
+                <button class="notif-filter-btn active-filter text-xs px-3 py-1.5 rounded-full border border-blue-500 bg-blue-500/10 text-blue-400" data-filter="all">All (${allNotifs.length})</button>
+                <button class="notif-filter-btn text-xs px-3 py-1.5 rounded-full border border-white/10 text-slate-400 hover:border-blue-500/40 transition" data-filter="return_reminder">⏰ Returns</button>
+                <button class="notif-filter-btn text-xs px-3 py-1.5 rounded-full border border-white/10 text-slate-400 hover:border-blue-500/40 transition" data-filter="maintenance">🔧 Maintenance</button>
+                <button class="notif-filter-btn text-xs px-3 py-1.5 rounded-full border border-white/10 text-slate-400 hover:border-blue-500/40 transition" data-filter="security">🛡️ Security</button>
+                <button class="notif-filter-btn text-xs px-3 py-1.5 rounded-full border border-white/10 text-slate-400 hover:border-blue-500/40 transition" data-filter="confirmation">✅ Bookings</button>
+            </div>`);
+
+        function renderNotifs(filter) {
+            const filtered = filter === 'all' ? allNotifs : allNotifs.filter(n => n.type === filter);
+            notifList.innerHTML = filtered.length ? filtered.map(n => `
+                <div class="glass rounded-xl p-4 flex items-start gap-3 border ${typeStyle[n.type] || 'border-white/5'}">
+                    <span class="text-xl mt-0.5 flex-shrink-0">${n.icon}</span>
+                    <div class="flex-1">
+                        <p class="text-sm text-slate-200">${n.text}</p>
+                        <p class="text-xs text-slate-600 mt-1">${n.time}</p>
+                    </div>
+                    ${n.unread ? '<div class="w-2 h-2 bg-blue-500 rounded-full mt-1.5 flex-shrink-0"></div>' : ''}
+                </div>`).join('')
+                : `<div class="text-center py-10 text-slate-500 text-sm">No notifications in this category.</div>`;
+        }
+
+        renderNotifs('all');
+
+        document.querySelectorAll('.notif-filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.notif-filter-btn').forEach(b => {
+                    b.classList.remove('active-filter', 'border-blue-500', 'bg-blue-500/10', 'text-blue-400');
+                    b.classList.add('border-white/10', 'text-slate-400');
+                });
+                btn.classList.add('active-filter', 'border-blue-500', 'bg-blue-500/10', 'text-blue-400');
+                btn.classList.remove('border-white/10', 'text-slate-400');
+                renderNotifs(btn.dataset.filter);
+            });
         });
 
         // Tab switching
