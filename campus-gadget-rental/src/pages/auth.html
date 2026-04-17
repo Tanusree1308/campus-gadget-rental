@@ -1,21 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Login / Sign Up — CampusRent</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="../styles/custom.css"/>
+  <link rel="stylesheet" href="../styles/custom.css" />
 </head>
-<body class="bg-slate-950 min-h-screen flex items-center justify-center p-4" style="background:radial-gradient(ellipse at 30% 40%,rgba(37,99,235,0.12) 0%,transparent 60%),#020617">
+
+<body class="bg-slate-950 min-h-screen flex items-center justify-center p-4"
+  style="background:radial-gradient(ellipse at 30% 40%,rgba(37,99,235,0.12) 0%,transparent 60%),#020617">
 
   <div class="w-full max-w-md">
     <!-- Logo -->
     <div class="text-center mb-8">
       <a href="../../index.html" class="inline-flex items-center gap-2.5">
-        <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/30">
+        <div
+          class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/30">
           <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+              d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18" />
           </svg>
         </div>
         <span class="font-bold text-white text-xl">Campus<span class="text-blue-400">Rent</span></span>
@@ -27,7 +32,9 @@
       <!-- Tabs -->
       <div class="flex bg-slate-900/80 rounded-xl p-1 mb-7 border border-white/5">
         <button id="login-tab" class="flex-1 py-2.5 text-sm font-medium rounded-lg transition tab-active">Login</button>
-        <button id="signup-tab" class="flex-1 py-2.5 text-sm font-medium rounded-lg transition text-slate-400 hover:text-slate-200">Sign Up</button>
+        <button id="signup-tab"
+          class="flex-1 py-2.5 text-sm font-medium rounded-lg transition text-slate-400 hover:text-slate-200">Sign
+          Up</button>
       </div>
 
       <!-- Login Form -->
@@ -35,20 +42,22 @@
         <div class="space-y-4">
           <div>
             <label class="block text-xs font-medium text-slate-400 mb-1.5 uppercase tracking-wide">Email</label>
-            <input type="email" id="login-email" required placeholder="you@university.edu" class="input-dark"/>
+            <input type="email" id="login-email" required placeholder="you@university.edu" class="input-dark" />
           </div>
           <div>
             <label class="block text-xs font-medium text-slate-400 mb-1.5 uppercase tracking-wide">Password</label>
-            <input type="password" id="login-password" required placeholder="••••••••" class="input-dark"/>
+            <input type="password" id="login-password" required placeholder="••••••••" class="input-dark" />
           </div>
-          <div id="login-error" class="hidden text-red-400 text-xs bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2"></div>
+          <div id="login-error"
+            class="hidden text-red-400 text-xs bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2"></div>
           <button type="submit" id="login-btn" class="btn-primary w-full text-center mt-2">
             Login to CampusRent
           </button>
         </div>
         <p class="text-center text-xs text-slate-500 mt-5">
           Don't have an account?
-          <button type="button" id="switch-to-signup" class="text-blue-400 hover:text-blue-300 ml-1">Sign up free</button>
+          <button type="button" id="switch-to-signup" class="text-blue-400 hover:text-blue-300 ml-1">Sign up
+            free</button>
         </p>
       </form>
 
@@ -57,18 +66,21 @@
         <div class="space-y-4">
           <div>
             <label class="block text-xs font-medium text-slate-400 mb-1.5 uppercase tracking-wide">Full Name</label>
-            <input type="text" id="signup-name" required placeholder="Your Name" class="input-dark"/>
+            <input type="text" id="signup-name" required placeholder="Your Name" class="input-dark" />
           </div>
           <div>
             <label class="block text-xs font-medium text-slate-400 mb-1.5 uppercase tracking-wide">Email</label>
-            <input type="email" id="signup-email" required placeholder="you@university.edu" class="input-dark"/>
+            <input type="email" id="signup-email" required placeholder="you@university.edu" class="input-dark" />
           </div>
           <div>
             <label class="block text-xs font-medium text-slate-400 mb-1.5 uppercase tracking-wide">Password</label>
-            <input type="password" id="signup-password" required placeholder="Min 6 characters" class="input-dark"/>
+            <input type="password" id="signup-password" required placeholder="Min 6 characters" class="input-dark" />
           </div>
-          <div id="signup-error" class="hidden text-red-400 text-xs bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2"></div>
-          <div id="signup-success" class="hidden text-emerald-400 text-xs bg-emerald-500/10 border border-emerald-500/20 rounded-lg px-3 py-2"></div>
+          <div id="signup-error"
+            class="hidden text-red-400 text-xs bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2"></div>
+          <div id="signup-success"
+            class="hidden text-emerald-400 text-xs bg-emerald-500/10 border border-emerald-500/20 rounded-lg px-3 py-2">
+          </div>
           <button type="submit" id="signup-btn" class="btn-primary w-full text-center mt-2">
             Create Account
           </button>
@@ -86,6 +98,9 @@
   </div>
 
   <script type="module">
+    import { signIn, signUp, db } from '../firebase.js';
+    import { doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
     // ── Tab switching ──────────────────────────────────────────────
     const params = new URLSearchParams(window.location.search);
     if (params.get('mode') === 'signup') showSignup();
@@ -96,18 +111,14 @@
     function showLogin() {
       document.getElementById('login-form').classList.remove('hidden');
       document.getElementById('signup-form').classList.add('hidden');
-      loginTab.classList.add('tab-active');
-      loginTab.classList.remove('text-slate-400');
-      signupTab.classList.remove('tab-active');
-      signupTab.classList.add('text-slate-400');
+      loginTab.classList.add('tab-active'); loginTab.classList.remove('text-slate-400');
+      signupTab.classList.remove('tab-active'); signupTab.classList.add('text-slate-400');
     }
     function showSignup() {
       document.getElementById('signup-form').classList.remove('hidden');
       document.getElementById('login-form').classList.add('hidden');
-      signupTab.classList.add('tab-active');
-      signupTab.classList.remove('text-slate-400');
-      loginTab.classList.remove('tab-active');
-      loginTab.classList.add('text-slate-400');
+      signupTab.classList.add('tab-active'); signupTab.classList.remove('text-slate-400');
+      loginTab.classList.remove('tab-active'); loginTab.classList.add('text-slate-400');
     }
 
     loginTab.addEventListener('click', showLogin);
@@ -115,48 +126,63 @@
     document.getElementById('switch-to-signup').addEventListener('click', showSignup);
     document.getElementById('switch-to-login').addEventListener('click', showLogin);
 
-    // ── Firebase Auth (demo fallback) ──────────────────────────────
-    // To use real Firebase, import signIn/signUp from '../firebase.js'
-    // and replace the setTimeout blocks below.
-
+    // ── Login ──────────────────────────────────────────────────────
     document.getElementById('login-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const btn = document.getElementById('login-btn');
       const err = document.getElementById('login-error');
-      btn.textContent = 'Logging in...';
-      btn.disabled = true;
+      btn.textContent = 'Logging in...'; btn.disabled = true;
       err.classList.add('hidden');
-
       const email = document.getElementById('login-email').value;
-      const name = email.split('@')[0];
-
-      // Demo: replace with → await signIn(email, password)
-      setTimeout(() => {
-        localStorage.setItem('cgr_user', JSON.stringify({ email, name, id: 'demo-' + Date.now() }));
+      const password = document.getElementById('login-password').value;
+      try {
+        const cred = await signIn(email, password);
+        const user = cred.user;
+        localStorage.setItem('cgr_user', JSON.stringify({
+          uid: user.uid, email: user.email,
+          name: user.displayName || email.split('@')[0]
+        }));
         window.location.href = 'dashboard.html';
-      }, 700);
+      } catch (ex) {
+        err.textContent = ex.code === 'auth/invalid-credential'
+          ? 'Invalid email or password.' : ex.message;
+        err.classList.remove('hidden');
+        btn.textContent = 'Login to CampusRent'; btn.disabled = false;
+      }
     });
 
+    // ── Sign Up ────────────────────────────────────────────────────
     document.getElementById('signup-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const btn = document.getElementById('signup-btn');
       const err = document.getElementById('signup-error');
       const suc = document.getElementById('signup-success');
-      btn.textContent = 'Creating account...';
-      btn.disabled = true;
+      btn.textContent = 'Creating account...'; btn.disabled = true;
       err.classList.add('hidden');
-
       const name = document.getElementById('signup-name').value;
       const email = document.getElementById('signup-email').value;
-
-      // Demo: replace with → await signUp(email, password, name)
-      setTimeout(() => {
-        localStorage.setItem('cgr_user', JSON.stringify({ email, name, id: 'demo-' + Date.now() }));
-        suc.textContent = 'Account created! Redirecting to dashboard...';
+      const password = document.getElementById('signup-password').value;
+      try {
+        const cred = await signUp(email, password, name);
+        const user = cred.user;
+        // Save profile to Firestore users collection
+        await setDoc(doc(db, 'users', user.uid), {
+          uid: user.uid, name, email,
+          college: '', phone: '',
+          created_at: serverTimestamp()
+        });
+        localStorage.setItem('cgr_user', JSON.stringify({ uid: user.uid, email, name }));
+        suc.textContent = 'Account created! Redirecting...';
         suc.classList.remove('hidden');
         setTimeout(() => window.location.href = 'dashboard.html', 1200);
-      }, 700);
+      } catch (ex) {
+        err.textContent = ex.code === 'auth/email-already-in-use'
+          ? 'Email already registered. Please login.' : ex.message;
+        err.classList.remove('hidden');
+        btn.textContent = 'Create Account'; btn.disabled = false;
+      }
     });
   </script>
 </body>
+
 </html>

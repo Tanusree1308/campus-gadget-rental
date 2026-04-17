@@ -212,6 +212,8 @@
     <script type="module">
         import { renderNavbar } from '../components/navbar.js';
         import { renderFooter } from '../components/footer.js';
+        import { db } from '../firebase.js';
+        import { collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
         renderNavbar('list');
         renderFooter();
@@ -306,7 +308,7 @@
         }
 
         // Submit
-        document.getElementById('list-form').addEventListener('submit', (e) => {
+        document.getElementById('list-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('submit-btn');
             btn.textContent = 'Listing...';
@@ -328,10 +330,19 @@
                 lng: parseFloat(document.getElementById('gadget-lng').value),
             };
 
-            // Firebase: replace with → await insertGadget(gadget) from firebase.js
+            // Save to localStorage
             const myGadgets = JSON.parse(localStorage.getItem('cgr_my_gadgets') || '[]');
             myGadgets.push(gadget);
             localStorage.setItem('cgr_my_gadgets', JSON.stringify(myGadgets));
+
+            // Save to Firestore
+            try {
+                await addDoc(collection(db, 'gadgets'), {
+                    ...gadget,
+                    owner_uid: user?.uid || 'demo',
+                    created_at: serverTimestamp(),
+                });
+            } catch (err) { console.warn('Firestore write failed:', err.message); }
 
             setTimeout(() => {
                 document.getElementById('form-success').textContent = 'Gadget listed successfully! Redirecting...';

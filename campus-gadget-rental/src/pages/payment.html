@@ -256,6 +256,8 @@
         import { renderFooter } from '../components/footer.js';
         import { sampleGadgets, inr } from '../data/sample-gadgets.js';
         import { renderChat } from '../components/chat.js';
+        import { db } from '../firebase.js';
+        import { collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
         renderNavbar();
         renderFooter();
@@ -355,11 +357,10 @@
             btn.disabled = true;
 
             // Simulate payment processing
-            setTimeout(() => {
+            setTimeout(async () => {
                 const bookingId = 'CGR' + Date.now().toString().slice(-8).toUpperCase();
+                const user = JSON.parse(localStorage.getItem('cgr_user') || '{}');
 
-                // Save booking
-                const bookings = JSON.parse(localStorage.getItem('cgr_bookings') || '[]');
                 const newBooking = {
                     id: bookingId,
                     gadget_id: gadget.id,
@@ -376,8 +377,22 @@
                     paid_via: method,
                     booked_at: new Date().toISOString(),
                 };
+
+                // Save to localStorage
+                const bookings = JSON.parse(localStorage.getItem('cgr_bookings') || '[]');
                 bookings.push(newBooking);
                 localStorage.setItem('cgr_bookings', JSON.stringify(bookings));
+
+                // Save to Firestore
+                try {
+                    await addDoc(collection(db, 'bookings'), {
+                        ...newBooking,
+                        renter_uid: user.uid || 'demo',
+                        renter_name: user.name || 'Guest',
+                        renter_email: user.email || '',
+                        created_at: serverTimestamp(),
+                    });
+                } catch (err) { console.warn('Firestore write failed:', err.message); }
 
                 // Save notifications
                 const notifs = JSON.parse(localStorage.getItem('cgr_notifications') || '[]');
